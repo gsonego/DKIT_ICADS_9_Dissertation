@@ -1,0 +1,829 @@
+% =============================================================
+% dissertation.tex
+% Training and Evaluation of a 10-Breed Dog Breed Classifier
+% Using Imagewoof
+% Guilherme Sonego Neto — DkIT, May 2026
+% =============================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% --- Encoding and language ---
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+% --- Page geometry ---
+\usepackage[
+  top=2.5cm,
+  bottom=2.5cm,
+  left=2.5cm,
+  right=2.5cm
+]{geometry}
+
+% --- Typography ---
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+
+% --- Tables ---
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+
+% --- Figures ---
+\usepackage{graphicx}
+\usepackage{caption}
+
+% --- Hyperlinks and URLs ---
+\usepackage{url}
+\usepackage[
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue
+]{hyperref}
+
+\usepackage{xcolor}
+\usepackage{xurl}
+
+% --- Citations: Harvard (author-year) ---
+\usepackage[round, authoryear]{natbib}
+
+% --- Section formatting ---
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+% =============================================================
+\begin{document}
+% =============================================================
+
+% --- Title Page ---
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\LARGE\bfseries Training and Evaluation of a \\10-Class Dog Breed\\
+  Classifier Using Imagewoof\par}
+
+  \vspace{2cm}
+
+  {\large\textbf{Guilherme Sonego Neto}\par}
+
+  \vspace{1cm}
+
+  {\large Dundalk Institute of Technology\par}
+
+  \vspace{1.5cm}
+
+  {\normalsize
+    In partial fulfilment of the requirements for the degree of\\[0.3em]
+    \textit{Postgraduate Diploma in Applied Data Science}\par}
+
+  \vspace{1.5cm}
+
+  {\large May 2026\par}
+
+  \vspace{1.5cm}
+
+  {\normalsize School of Informatics and Creative Arts\par}
+
+  \vspace{0.5cm}
+
+  {\normalsize
+    Supervisor(s):\\[0.3em]
+    Muhammad Adil Raja\\
+    Jack Mc Donnell\par}
+
+  \vfill
+\end{titlepage}
+
+% =============================================================
+% Abstract
+% =============================================================
+\begin{abstract}
+This project investigates how transfer learning can be used to develop and evaluate a machine-learning pipeline for classifying 10 dog breeds using Imagewoof. It is an applied data analytics study combining data preparation, TensorFlow/Keras model development, comparative experimentation, and result interpretation in a reproducible notebook-based workflow.
+
+Imagewoof is a challenging 10-class subset of ImageNet containing visually similar dog breeds, making it suitable for a fine-grained classification study. The project compares transfer-learning strategies using pre-trained models and evaluates them with accuracy, precision, recall, F1-score, confusion matrices, and training curves. Six experiment runs were completed: feature extraction and fine-tuning passes for MobileNetV2, EfficientNetB0, and ResNet50. EfficientNetB0 under feature extraction achieved the strongest held-out performance with test accuracy of 0.9578, while MobileNetV2 achieved 0.9509 and ResNet50 achieved 0.9397. Fine-tuning did not consistently improve over the feature-extraction baselines for any of the three architectures, with the feature-extraction strategy producing the strongest results in this comparison.
+
+A small external image set was used as a secondary evaluation layer to examine generalisation beyond the core dataset. All three architectures produced distributed predictions across multiple breed classes on out-of-scope images. While the MobileNetV2 baseline and EfficientNetB0\_FineTune achieved an in-scope external accuracy of 1.00 (8/8 correct), ResNet50 correctly predicted 7/8 (0.875) external validation images (mean in-scope confidence 0.9512, out-of-scope mean confidence 0.8211). The external evaluation shows how the trained models behave on images outside the core dataset, while primary generalisation performance is measured using the held-out Imagewoof validation set.
+\end{abstract}
+
+\newpage
+
+% =============================================================
+% Table of Contents
+% =============================================================
+\tableofcontents
+
+\newpage
+
+% =============================================================
+% SECTION 1: Background / Introduction
+% =============================================================
+
+\section{Background / Introduction}
+
+\subsection{Introduction}
+
+Deep learning has transformed image classification by enabling convolutional neural networks to learn useful visual features from large labelled datasets. In practice, transfer learning is especially valuable because it allows pre-trained models to be adapted to narrower tasks without training a model from scratch. This is particularly relevant in an academic dissertation where the objective is not only to achieve good predictive performance, but also to document a clear and reproducible workflow.
+
+This study focuses on dog breed classification using Imagewoof, a challenging 10-class subset derived from ImageNet. The project develops a machine-learning pipeline for loading, preprocessing, training, and evaluating image data, and uses that pipeline to compare a small set of TensorFlow/Keras transfer-learning models on the Imagewoof task. The practical component is organised through a Python notebook so that the workflow, outputs, and model comparisons can be documented consistently.
+
+The study also recognises that strong in-dataset results do not automatically imply strong performance in more varied conditions. For that reason, a small external image set is used as a secondary evaluation layer. These images are not used for training, but to support discussion of generalisation, model behaviour, and the limitations of closed-set classifiers when inputs differ from the main dataset.
+
+The project centres on comparing transfer-learning models for a 10-breed classification problem, prioritising reproducible methods and evidence-based evaluation.
+
+\subsection{Research Questions}
+
+This project is guided by two primary research questions:
+
+\textbf{RQ1 -- Training Pipeline Design}\\
+How can a machine learning pipeline be developed to classify 10 dog breeds using the Imagewoof dataset?
+
+This question focuses on the practical engineering and analytics workflow. It addresses dataset handling, preprocessing, model training, evaluation, reproducibility, and the design of a notebook workflow for repeatable experimentation and interpretation.
+
+\textbf{RQ2 -- Comparative Model Training}\\
+Which transfer learning strategy delivers the best overall performance for classifying 10 dog breeds using the Imagewoof dataset?
+
+This question focuses on comparative modelling. It investigates how different pre-trained architectures and training strategies, such as feature extraction and fine-tuning, affect classification performance, generalisation, and the trade-off between model quality and implementation complexity.
+
+Together, these research questions shift the focus from analysing a fixed classifier to building, training, and evaluating a reproducible image classification workflow.
+
+\subsection{Problem Definition}
+
+Developing a machine learning pipeline capable of classifying 10 visually similar dog breeds from image data using the Imagewoof dataset presents a fine-grained classification challenge. This is a fine-grained image classification problem, because the breeds in Imagewoof are visually similar and therefore harder to distinguish than broader object categories.
+
+The core problem here is not how to wrap a fixed model in a reliability layer, but how to design a clear, reproducible, and evidence-based training pipeline for the defined 10-breed task. The work therefore demonstrates:
+
+\begin{itemize}
+  \item a reproducible end-to-end pipeline for loading, preprocessing, training, and evaluating image data
+  \item a justified comparison of selected TensorFlow/Keras model architectures
+  \item a clear explanation of training strategies such as feature extraction and fine-tuning
+  \item evidence-based evaluation using appropriate classification metrics and visual analysis
+\end{itemize}
+
+An additional practical challenge is that performance on the main dataset may not fully represent behaviour on more varied real-world images. For that reason, the experiments also include a small external image evaluation as a secondary strand, allowing discussion of generalisation limits without replacing the main Imagewoof-based experiment.
+
+\subsection{Project Relevance in the field of Data Analytics}
+
+The relevance to applied data analytics lies in building and evaluating a practical image-classification workflow from end to end. Rather than treating model training as an isolated coding exercise, the work is approached as a real analytics task where data preparation, model development, experiment comparison, and interpretation are handled in a structured way.
+
+Applied data analytics is reflected throughout the methodology via:
+
+\begin{itemize}
+  \item structured preparation of an image dataset for machine learning
+  \item use of TensorFlow/Keras transfer learning for practical model development
+  \item comparative evaluation using quantitative metrics such as accuracy, precision, recall, F1-score, and confusion matrices
+  \item visual analysis of training history, class-level errors, and model behaviour on external images
+\end{itemize}
+
+By combining model training, evaluation, error analysis, and discussion of generalisation, the workflow shows how applied data analytics supports the development of usable machine learning systems rather than only producing a single accuracy score.
+
+\subsection{Core Technology, Architecture and Research Processes}
+
+The core implementation rests on a practical TensorFlow/Keras workflow for classifying 10 dog breeds from the Imagewoof dataset. Instead of relying on one fixed classifier, the experiments compare a small number of pre-trained approaches to examine how different training strategies affect performance.
+
+\subsubsection{Core Technology}
+
+The implementation relies on the following technologies:
+
+\begin{itemize}
+  \item Python as the primary programming language
+  \item TensorFlow / Keras for transfer learning, model training, and fine-tuning
+  \item Jupyter Notebook for the practical hands-on workflow and experiment documentation
+  \item NumPy and Pandas for data handling and result aggregation
+  \item Matplotlib and Seaborn for visualisation of training curves, confusion matrices, and comparative results
+  \item scikit-learn utilities for evaluation metrics and reporting where appropriate
+\end{itemize}
+
+The final comparison in this study uses MobileNetV2, EfficientNetB0, and ResNet50 (feature extraction and fine-tuning variants for each architecture).
+
+\subsubsection{System Architecture}
+
+The overall workflow is organised into a few clear stages:
+
+\begin{enumerate}
+  \item \textbf{Data preparation}\\
+        Load the Imagewoof images and organise the training, validation, and test data.
+  \item \textbf{Preprocessing}\\
+        Resize and normalise the images so they can be used by the selected models.
+  \item \textbf{Model training}\\
+        Train and compare the selected transfer-learning models.
+  \item \textbf{Evaluation}\\
+        Measure performance using standard classification metrics and visual outputs.
+  \item \textbf{External-image testing}\\
+        Use the curated \texttt{external\_images} set as a secondary evaluation step.
+\end{enumerate}
+
+This structure keeps the workflow practical, explicit, and reproducible.
+
+\subsubsection{Research Process}
+
+The research process follows a structured but practical workflow:
+
+\begin{enumerate}
+  \item Prepare the Imagewoof dataset and confirm the data split strategy.
+  \item Build a reusable notebook workflow for loading, preprocessing, training, and evaluation.
+  \item Train selected transfer-learning models under an initial feature-extraction setup.
+  \item Run fine-tuning experiments on the strongest candidate models.
+  \item Compare the models using consistent evaluation metrics and visualisations.
+  \item Evaluate the selected models on the \texttt{external\_images} set.
+  \item Interpret the results in relation to the research questions and the empirical findings.
+\end{enumerate}
+
+All experiments are designed to be reproducible, with outputs exported programmatically (for example training history tables, classification reports, confusion matrices, and external-evaluation result files).
+
+\subsection{Hypothesis for a Solution}
+
+This project is based on the hypothesis that transfer learning can be used to develop a usable classifier for 10 dog breeds using the Imagewoof dataset.
+
+This hypothesis assumes that pre-trained models provide a strong starting point for this classification task and that a structured comparison of transfer-learning strategies will help identify a practical, evidence-based approach for the task.
+
+\subsection{Structure of the Report}
+
+\textbf{Section 1 -- Background / Introduction}\\
+This section introduces the project context, presents the research questions, defines the problem, explains the relevance of the work in applied data analytics, and outlines the core workflow and hypothesis.
+
+\textbf{Section 2 -- Literature Review}\\
+This section reviews relevant literature on transfer learning, convolutional neural networks, fine-grained image classification, and evaluation of classification performance. It also positions the project within the current research landscape.
+
+\textbf{Section 3 -- Exploration of Data and Methods}\\
+This section describes the Imagewoof dataset, the external image set, data preparation, preprocessing, and the practical workflow used to train and evaluate the selected models.
+
+\textbf{Section 4 -- Results and Discussion}\\
+This section presents the baseline results, evaluation strategy, external-image analysis, and reporting outputs used to interpret the dissertation findings.
+
+\section{Literature Review}
+
+Modern image classification is dominated by convolutional neural networks (CNNs) trained on large labelled datasets. The release of ImageNet provided a major foundation for this progress by offering a large-scale benchmark for visual recognition tasks \citep{deng2009imagenet}. The ImageNet Large Scale Visual Recognition Challenge (ILSVRC) further accelerated the field by encouraging systematic comparison of model performance across different architectures \citep{russakovsky2015imagenet}. As a result, CNNs pre-trained on ImageNet became a standard starting point for many practical computer vision tasks.
+
+Transfer learning is especially important in this context because it allows knowledge learned from large datasets to be reused for more focused classification problems. \citet{yosinski2014transferable} showed that features learned by deep neural networks can transfer effectively across related tasks, particularly when lower-level visual patterns remain useful. This is directly relevant to the present project, which uses Imagewoof as a focused 10-class dataset and investigates which transfer-learning strategy provides the strongest practical performance.
+
+Imagewoof is well-suited for this study because it poses a fine-grained classification problem. The visual differences between the 10 dog breeds are often subtle, relying on specific fur patterns, ear shapes, or facial structures. Fine-grained tasks like this are also highly sensitive to pose variation and background clutter, making them much harder than general object recognition \citep{shorten2019survey}. Because the classes are so similar, Imagewoof provides a strict test of how well different transfer-learning approaches actually perform when the classification boundaries are narrow.
+
+In comparing these approaches, the choice of base architecture is critical. MobileNetV2 was specifically designed to be lightweight, using inverted residuals and linear bottlenecks for efficient performance \citep{howard2017mobilenets}. ResNet50 provides a heavier, traditional baseline that solved earlier vanishing-gradient issues using residual skip connections \citep{he2016deep}. EfficientNet, meanwhile, balances depth, width, and resolution through compound scaling to improve accuracy without the compute demands of older, deeper models \citep{tan2019efficientnet}. Testing these three architectures together shows how very different network designs handle the same fine-grained problem.
+
+Existing research also shows that transfer learning is not a single fixed method. Performance can depend on decisions such as model choice, feature extraction, and fine-tuning. This makes comparative experimentation an important part of applied machine learning, particularly in academic work where the goal is not only to obtain a result, but also to justify the process used to obtain it. For this reason, the literature supports a study design that compares a small number of pre-trained models and training strategies under consistent evaluation conditions. Fine-tuning an entire architecture frequently carries the risk of overfitting, especially when the target dataset is relatively small compared to the parameter count of the model.
+
+Evaluation is another important theme in the literature. Although classification accuracy is a useful summary metric, it is not sufficient on its own to explain model behaviour. Class-level precision, recall, F1-score, confusion matrices, and visual analysis are commonly used to provide a fuller picture of performance. This broader evaluation perspective is important for a practical study such as this one, where the aim is to develop not only a high-performing model but also a well-documented, evidence-based workflow.
+
+Literature on calibration and confidence remains relevant as a secondary consideration. \citet{guo2017calibration} showed that modern neural networks are often poorly calibrated, meaning predicted probabilities do not always reflect true correctness. \citet{hendrycks2017baseline} further demonstrated that softmax confidence can still provide some insight into model behaviour. In this study, these ideas are not the main research focus, but they remain useful when discussing external-image results and the limitations of closed-set classifiers.
+
+Overall, the literature supports three key ideas for this study: CNN-based transfer learning is an effective foundation for image classification, fine-grained tasks such as dog-breed recognition benefit from structured model comparison, and evaluation should extend beyond a single headline metric. These findings provide the basis for a practical training-and-evaluation study using the Imagewoof dataset.
+
+\subsection{Limitations of Existing Solutions}
+
+Although CNNs and transfer learning have achieved strong benchmark performance, many studies place greater emphasis on final accuracy than on presenting a concise and reproducible comparison of training strategies for a narrowly scoped applied problem. For this project, this creates a practical gap: the work must not only apply existing methods but also explain clearly how methods were selected, implemented, and evaluated.
+
+There is also a gap between reporting strong results on a core dataset and discussing how a model behaves on more varied images. Research on calibration and confidence remains relevant here \citep{guo2017calibration, hendrycks2017baseline}, because even well-performing classifiers may behave less reliably when data differs from the training distribution.
+
+This project addresses these gaps by developing a notebook-based workflow, comparing selected transfer-learning strategies on Imagewoof, and using a small external image set to support discussion of practical model behaviour without shifting the study away from its main classification task.
+
+\section{Exploration of Data and Methods}
+
+\subsection{Data Collection and Methods of Data Collection}
+
+The primary dataset used in this project is Imagewoof, a subset of ImageNet containing images from 10 visually similar dog breeds. Imagewoof was created as a more challenging classification subset by selecting dog classes that are difficult to distinguish, making it suitable for a fine-grained transfer-learning study.
+
+In the current project direction, the Imagewoof images are used as the main dataset for model training and evaluation. The practical workflow uses the available dataset structure to support reproducible train, validation, and test handling within the TensorFlow notebook. This makes it possible to compare models under consistent experimental conditions.
+
+In addition to the main dataset, a small external collection of dog images is retained to support secondary evaluation. These images are not used for training. Instead, they provide a small observational check on how the final trained model behaves when images differ in pose, background, framing, or breed scope from the main dataset.
+
+All datasets are stored locally and accessed programmatically. No automated scraping or large-scale new data acquisition is required for the project.
+
+\subsection{Procedure of Ethical Approval}
+
+This project does not involve human participants, personal data, or sensitive information. The primary dataset, Imagewoof, is a publicly available subset of ImageNet and contains labelled images of dog breeds. These images are widely used for academic research and do not contain personally identifiable information.
+
+In addition to the Imagewoof dataset, a small external set of dog images is used to strengthen evaluation by providing a simple comparison under slightly varied visual conditions. These external images are sourced from Wikimedia Commons and are selected under the following constraints:
+
+\begin{itemize}
+  \item Only images released under Public Domain or permissive Creative Commons licences are used.
+  \item No identifiable individuals appear in the images.
+  \item The dog is the primary subject of the image.
+\end{itemize}
+
+The external images are used strictly for local evaluation purposes and are not redistributed. Each image source, licence type, and access date is documented in the Appendix to ensure transparency and proper attribution.
+
+Given that the project does not involve human subjects, personal data processing, behavioural studies, or data collection from individuals, formal ethical approval was not required under DkIT research guidelines. However, care has been taken to ensure responsible use of publicly available data and compliance with licensing requirements.
+
+\subsection{Data Description}
+
+Imagewoof contains 10 dog-breed classes in a standard class-per-directory layout (Figure~\ref{fig:sample_breeds}), which is compatible with TensorFlow/Keras image-loading pipelines.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{figures/sample_breeds.png}
+  \caption{Representative sample images from each of the 10 Imagewoof dog breed classes.}
+  \label{fig:sample_breeds}
+\end{figure}
+
+In this study, Imagewoof is used as the core dataset for model training and evaluation. The notebook workflow applies a reproducible approach to training, validation, and final testing so that model comparison remains consistent across experiments.
+
+In addition to the main dataset, a small external dataset assembled from Wikimedia Commons is used to simulate slightly more varied real-world conditions. This external set contains both in-scope and out-of-scope dog images and is intentionally limited in size. Its purpose is to support discussion of model behaviour outside the core dataset rather than provide a statistically representative benchmark.
+
+All images are processed into the input format required by the selected TensorFlow models, including resizing and ImageNet-style normalisation. No data augmentation is used in this phase to preserve a controlled comparison between architectures and training strategies; this keeps interpretation of performance differences attributable primarily to model and training choices. Imagewoof already contains substantial natural variation in pose, lighting, framing, and background conditions, making it suitable for controlled experimentation without introducing additional augmentation variables.
+
+\subsection{Data Cleaning and Exploration}
+
+As Imagewoof is a publicly curated dataset derived from ImageNet, extensive cleaning is not required. However, the workflow still requires careful preparation to ensure compatibility with the TensorFlow pipeline. Directory structures, label mappings, and image loading are verified programmatically before training.
+
+Validation and test handling are created using a reproducible rule so that all model comparisons remain consistent. This is important because the study compares training strategies rather than presenting a single one-off model result.
+
+For the external Wikimedia Commons dataset, additional manual validation was required during image selection. Each image was reviewed to confirm that:
+
+\begin{itemize}
+  \item The dog is the primary subject.
+  \item The image licence is Public Domain or permissive Creative Commons.
+  \item No identifiable individuals are present.
+  \item The image clearly belongs either to one of the 10 in-scope breeds or to an out-of-scope breed.
+\end{itemize}
+
+Images that did not meet these criteria were excluded prior to evaluation. The final external set consists of 20 images, divided into 8 in-scope and 12 out-of-scope examples. It is important to emphasize that the primary generalisation evaluation in this project comes from the held-out Imagewoof validation set, which contains several thousand unseen images. Because the Wikimedia Commons set is intentionally small and not class-balanced, it should be interpreted strictly as a supplementary observational evaluation rather than the primary measure of model generalisation.
+
+No relabelling, augmentation, or manual image modification is used. Apart from the standard preprocessing required by the chosen TensorFlow models, all images are evaluated in their original form.
+
+\subsection{Data Visualisation}
+
+Data visualisation in this project is used to critically compare trained models and identify specific patterns in classification behaviour. Rather than relying solely on aggregate metrics, visual outputs help to diagnose where and why an architecture succeeds or fails.
+
+The main visual analyses include:
+
+\begin{itemize}
+  \item \textbf{Training and validation loss/accuracy curves:} These are used to identify convergence behaviour and detect potential overfitting during the training process. They provide early indications of whether a model has stabilized or if fine-tuning is destabilizing the weights.
+  \item \textbf{Confusion matrices:} These matrices help to visualize class-level error distribution. Specifically, they reveal whether misclassifications are evenly spread across the dataset or if they are localized to specific visually similar breed pairs, which is a common failure mode in fine-grained tasks.
+  \item \textbf{Class-level comparison charts (Per-class Recall):} These charts expose imbalance-related weaknesses. Even when overall accuracy is high, they can highlight specific breeds that the models consistently struggle to recognize due to either visual ambiguity or dataset representation.
+  \item \textbf{Comparative metric tables:} Summarising results across architectures and training strategies provides a structured way to observe performance trade-offs directly.
+  \item \textbf{Selected examples from the external image evaluation:} These visually demonstrate real-world generalization constraints by showing model behavior and confidence on both in-scope and out-of-scope images.
+\end{itemize}
+
+\subsection{Preliminary Analysis}
+
+At this stage, baseline model training experiments had already been completed. Initial baseline experiments were run locally using TensorFlow/Keras under a feature-extraction setup. These runs used the Imagewoof training directory with a deterministic internal training/validation split and evaluated the resulting models on the held-out Imagewoof \texttt{val} directory.
+
+At this stage, two baseline models were executed as initial feature-extraction pilots in a CPU-only Windows environment. Following these successful pilots, final training for all six experiments utilized hardware acceleration (NVIDIA RTX 3060), which significantly reduced epoch training times. This computational shift highlighted an additional benefit of transfer learning: reusing pretrained layers is computationally economical compared to training a deep network entirely from scratch. These final GPU-accelerated runs produced the following headline baseline results:
+
+\begin{itemize}
+  \item \textbf{MobileNetV2:} best validation accuracy \textbf{0.9568}, held-out test accuracy \textbf{0.9509}
+  \item \textbf{EfficientNetB0:} best validation accuracy \textbf{0.9684}, held-out test accuracy \textbf{0.9578}
+  \item \textbf{ResNet50:} best validation accuracy \textbf{0.9485}, held-out test accuracy \textbf{0.9397}
+\end{itemize}
+
+These baseline outputs were exported as reproducibility artifacts, including \texttt{history.csv}, \texttt{classification\_report.csv}, and \texttt{confusion\_matrix.npy} for each run.
+
+The gap between the best validation accuracy and the held-out test accuracy is small (approximately 0.006--0.011 percentage points) and broadly consistent across all three architectures, which suggests that the internal training/validation split is representative of the held-out distribution. Early class-level results also show uneven performance, with some breeds performing better than others in the first baseline runs.
+
+These findings make the comparative study more meaningful rather than less. They indicate that:
+
+\begin{itemize}
+  \item a single architecture should not be assumed to generalise well across all breeds
+  \item internal validation performance alone may overstate real performance on the held-out set
+  \item additional comparison across architectures and fine-tuning strategies is necessary
+\end{itemize}
+
+These preliminary results provide concrete evidence for the selected study direction and establish baselines for subsequent comparisons.
+
+\section{Results and Discussion}
+
+\subsection{Model Training Experiments (RQ2)}
+
+The project compares a small number of TensorFlow/Keras transfer-learning models on the Imagewoof task. Baseline feature-extraction runs have been completed for:
+
+\begin{itemize}
+  \item MobileNetV2
+  \item EfficientNetB0
+  \item ResNet50
+\end{itemize}
+
+Fine-tuning passes were completed for all three architectures by unfreezing selected upper layers and retraining with a lower learning rate. The detailed strategy comparison is reported in Section 5.2 and Table 1.
+
+\subsection{Structured Evaluation on Imagewoof (RQ1 \& RQ2)}
+
+Each experiment was evaluated using accuracy, precision, recall, F1-score (macro and weighted), confusion matrices, per-class error patterns, and training and validation curves. Across all six runs, held-out test accuracy ranged from 0.9374 to 0.9578, with macro F1 ranging from 0.9330 to 0.9529. Training curves showed that all runs converged within the 100-epoch cap through early stopping, with actual epoch counts ranging from 13 to 27 across head and fine-tune phases. Confusion matrices revealed localised misclassification patterns rather than systematic failures, with English Foxhound appearing as the most consistent error source across all architectures.
+
+\subsection{External Image Evaluation (RQ2)}
+
+The existing 20-image Wikimedia Commons dataset stored in \texttt{external\_images} was retained as a secondary evaluation set. External-image behaviour was interpreted alongside the main Imagewoof results. The analysis includes:
+
+\begin{itemize}
+  \item Running the selected models on all 20 images
+  \item Separating outcomes into in-scope and out-of-scope subsets
+  \item Recording predictions and confidence values
+  \item Identifying notable errors and overconfident mistakes
+\end{itemize}
+
+MobileNetV2, EfficientNetB0, and ResNet50 were evaluated on the full 20-image set using the same preprocessing pipeline as the main evaluation. Outcomes were separated into in-scope and out-of-scope subsets, and predictions and confidence scores were recorded for each image. Full quantitative findings are reported in Section 5.4.
+
+\subsection{Additional Visualisation and Reporting (RQ1 \& RQ2)}
+
+Training and validation loss/accuracy curves support the convergence summary above, with validation loss tracking training loss closely throughout the head phase. Confusion matrices visualise per-class error distribution and show that misclassifications are localised to visually similar breed pairs rather than reflecting systematic failures. Comparative results tables summarise accuracy and F1 across all six runs. Per-class F1 analysis shows that English Foxhound is the weakest class across all three architectures, aligning with its lower training sample count in the dataset.
+
+\section{Final Design and Implementation of Modelling}
+
+This section presents the final modelling design, implementation choices, and comparative results for the 10-breed classification task.
+
+\subsection{Additional Prototypes}
+
+The current comparison includes:
+
+\begin{itemize}
+  \item MobileNetV2
+  \item EfficientNetB0
+  \item ResNet50
+\end{itemize}
+
+Completed baseline and fine-tuning runs are reported for all three architectures. The purpose of this section is to compare predictive performance, training behaviour, and implementation practicality.
+
+Each run produced reproducibility artifacts (training history, classification report, confusion matrix, and model file) that were used to generate the comparative analysis presented in this section.
+
+\subsection{Hyper Parameter Tuning, Evaluation and Testing}
+
+The experiment setup used in this study was:
+
+\begin{itemize}
+  \item image size: 224 $\times$ 224
+  \item batch size: 16
+  \item deterministic training/validation split from \texttt{imagewoof\textbackslash{}train}
+  \item held-out test evaluation using \texttt{imagewoof\textbackslash{}val}
+  \item head-training learning rate: 1e-3
+  \item fine-tuning learning rate: 1e-5
+  \item feature extraction followed by selective fine-tuning
+\end{itemize}
+
+This section reports:
+
+\begin{itemize}
+  \item training and validation curves
+  \item test-set metrics
+  \item confusion matrices
+  \item class-level error analysis
+  \item comparative model tables
+  \item external-image evaluation findings
+\end{itemize}
+
+The following values correspond to the feature-extraction baselines (training stopped by early stopping; actual epoch counts are recorded in \texttt{results/\textless{}run\textgreater{}/history.csv}):
+
+\begin{itemize}
+  \item \textbf{MobileNetV2}
+    \begin{itemize}
+      \item Training strategy: feature extraction
+      \item Best validation accuracy: 0.9568
+      \item Held-out test accuracy: 0.9509
+    \end{itemize}
+  \item \textbf{EfficientNetB0}
+    \begin{itemize}
+      \item Training strategy: feature extraction
+      \item Best validation accuracy: 0.9684
+      \item Held-out test accuracy: 0.9578
+    \end{itemize}
+  \item \textbf{ResNet50}
+    \begin{itemize}
+      \item Training strategy: feature extraction
+      \item Best validation accuracy: 0.9485
+      \item Held-out test accuracy: 0.9397
+    \end{itemize}
+\end{itemize}
+
+These results show that all three feature-extraction baselines reached strong held-out performance. The gap between best validation accuracy and held-out test accuracy is small across all models (0.006--0.011 percentage points), suggesting that the internal split is representative of the held-out distribution. EfficientNetB0 provides the strongest feature-extraction result, followed by MobileNetV2 and ResNet50.
+
+Early stopping triggered in all six runs, with actual epoch counts ranging from 13 to 27 across head and fine-tune phases. This confirms that the 100-epoch cap was never a binding constraint and that convergence was reliably detected before the maximum was reached, supporting the reproducibility of the training configuration.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/training_efficiency.png}
+  \caption{Total epochs trained per run under early stopping, compared against the 100-epoch head cap and 200-epoch combined cap, confirming the cap was never a binding constraint.}
+  \label{fig:training_efficiency}
+\end{figure}
+
+
+Table 1 summarises the strategy comparison across the six completed runs. To provide context for these results, Table 2 documents the respective model complexity, detailing the architectural philosophy and parameter count for each tested model.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Strategy Comparison}
+  \begin{tabular}{llrrrr}
+    \toprule
+    Run & Strategy & Best val.\ acc. & Test acc. & Macro F1 & Weighted F1 \\
+    \midrule
+    MobileNetV2             & Feat extraction & 0.9568 & 0.9509 & 0.9476 & 0.9508 \\
+    MobileNetV2\_FT         & Fine-tuning        & 0.9584 & 0.9486 & 0.9450 & 0.9485 \\
+    EfficientNetB0          & Feat extraction & \textbf{0.9684} & \textbf{0.9578} & \textbf{0.9529} & \textbf{0.9576} \\
+    EfficientNetB0\_FT      & Fine-tuning       & 0.9662 & 0.9555 & 0.9508 & 0.9554 \\
+    ResNet50                & Feat extraction & 0.9485 & 0.9397 & 0.9353 & 0.9396 \\
+    ResNet50\_FT            & Fine-tuning        & 0.9568 & 0.9374 & 0.9330 & 0.9374 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+{\small\noindent Source: Values were derived from the \texttt{accuracy}, \texttt{macro avg}, and \texttt{weighted avg} rows in the classification reports and the best \texttt{val\_accuracy} from training histories for all six runs.}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Model Complexity Comparison}
+  \begin{tabular}{llll}
+    \toprule
+    Architecture & Parameters & Training Strategy & Architectural Focus \\
+    \midrule
+    MobileNetV2    & ${\sim}$3.5M  & Lightweight      & Optimized for mobile/edge efficiency \\
+    EfficientNetB0 & ${\sim}$5.3M  & Balanced         & Compound scaling (depth/width/res)   \\
+    ResNet50       & ${\sim}$25.6M & Deep Traditional & Heavy residual skip connections      \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+{\small\noindent Source: Extracted from Keras model architecture summaries prior to parameter unfreezing.}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/training_curves_MobileNetV2.png}
+  \includegraphics[width=\textwidth]{results/training_curves_EfficientNetB0.png}
+  \includegraphics[width=\textwidth]{results/training_curves_ResNet50.png}
+  \caption{Training and validation accuracy curves across all six runs, illustrating convergence behaviour and the effect of early stopping.}
+  \label{fig:training_curves}
+\end{figure}
+
+Fine-tuning results were mixed across architectures. For MobileNetV2, fine-tuning reduced test accuracy from 0.9509 to 0.9486 and slightly reduced both macro and weighted F1. For EfficientNetB0, fine-tuning produced comparable test accuracy (0.9555 versus 0.9578 for feature extraction) with similar F1. For ResNet50, fine-tuning reduced test accuracy from 0.9397 to 0.9374.
+
+The failure of fine-tuning to consistently improve accuracy can be attributed to several factors. Lower-level features extracted from ImageNet are already highly transferable to fine-grained visual classification tasks, leaving limited room for improvement without substantially larger datasets. In addition, Imagewoof remains relatively small compared to the parameter count of deep CNN architectures, increasing the risk of overfitting when large numbers of layers are unfrozen. Fine-tuning is also highly sensitive to hyperparameter selection, particularly learning-rate scheduling, meaning consistent gains cannot be guaranteed without substantially more experimentation.
+
+This is an important finding for RQ2. It shows that transfer learning strategy affects final performance, but greater training complexity does not automatically lead to better results. Under this in-dataset evaluation setting, the strongest overall result was feature extraction with EfficientNetB0; however, Section 5.4 shows that both strategies showed equivalent external behaviour and should be considered alongside internal metrics.
+
+\subsection{Class-wise Failure Analysis}
+
+Table 3 reports per-class recall for the three feature-extraction baselines. Recall is the primary lens because it directly captures how many true instances of each breed the model correctly identified, making class-level weaknesses visible even when aggregate accuracy is high.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Per-class Recall Comparison}
+  \begin{tabular}{lrrr}
+    \toprule
+    Breed Name           & MobileNetV2 & EfficientNetB0 & ResNet50 \\
+    \midrule
+    Shih-Tzu             & 0.9487 & 0.9707 & 0.9389 \\
+    Rhodesian Ridgeback  & 0.9632 & 0.9804 & 0.9657 \\
+    Beagle               & 0.9498 & 0.9426 & 0.9163 \\
+    English Foxhound     & \color{red}{0.8616} & \color{red}{0.8304} & \color{red}{0.8304} \\
+    Australian Terrier   & 0.9776 & 0.9676 & 0.9451 \\
+    Border Terrier       & 0.9066 & 0.9287 & 0.9238 \\
+    Golden Retriever     & 0.9651 & 0.9776 & 0.9651 \\
+    Old English Sheepdog & 0.9763 & 0.9787 & \color{blue}{0.9668} \\
+    Samoyed              & \color{blue}{0.9837} & \color{blue}{0.9907} & 0.9604 \\
+    Dingo                & 0.9341 & 0.9512 & 0.9341 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+{\small\noindent Source: Per-class recall values were extracted from the saved classification reports for all three feature-extraction runs.}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/per_class_f1_comparison.png}
+  \caption{Per-class F1 score comparison across all three feature-extraction baseline models.}
+  \label{fig:per_class_f1}
+\end{figure}
+
+All 10 classes reached functional recall levels across all three models, with values ranging from 0.830 to 0.991. \textbf{English Foxhound} is consistently the weakest class across all three architectures (MobileNetV2: 0.8616, EfficientNetB0: 0.8304, ResNet50: 0.8304), which aligns with it having approximately 40\% fewer training samples than most other breeds (${\sim}$464 training images versus ${\sim}$750 for the majority), making it the primary class-imbalance case in the dataset. Border Terrier also shows consistently lower recall across all architectures (MobileNetV2: 0.9066, EfficientNetB0: 0.9287, ResNet50: 0.9238), suggesting some shared visual ambiguity with adjacent breeds.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/Foxhound-vs-Beagle-1.png}
+  \caption{Example visual similarity between Beagle and English Foxhound breeds, illustrating a likely source of recurring misclassification across models. \textbf{ Credit: Left -- Mary Swift, Shutterstock \textbar{} Right -- kobkik, Shutterstock}}
+  \label{fig:foxhound_beagle}
+\end{figure}
+
+The strongest performers across all three architectures are Samoyed (MobileNetV2: 0.9837, EfficientNetB0: 0.9907, ResNet50: 0.9604), Old English Sheepdog (MobileNetV2: 0.9763, EfficientNetB0: 0.9787, ResNet50: 0.9668), and Rhodesian Ridgeback (MobileNetV2: 0.9632, EfficientNetB0: 0.9804, ResNet50: 0.9657). For RQ2, the per-class comparison reinforces that the aggregate test accuracy is a reliable summary: class-level quality is broadly consistent across all feature-extraction models, and the comparison does not reveal any class-collapse failures. Strategy differences should therefore be interpreted through the small but consistent numeric gaps rather than qualitative failure modes.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/confusion_matrices_MobileNetV2.png}
+  \includegraphics[width=\textwidth]{results/confusion_matrices_EfficientNetB0.png}
+  \includegraphics[width=\textwidth]{results/confusion_matrices_ResNet50.png}
+  \caption{Confusion matrices for all six runs, showing localised misclassification patterns concentrated around English Foxhound and Border Terrier.}
+  \label{fig:confusion_matrices}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/top_misclassification_pairs.png}
+  \caption{Top misclassification pairs aggregated across all six runs, highlighting the most frequently confused breed combinations.}
+  \label{fig:top_misclassification_pairs}
+\end{figure}
+
+\subsection{External Image Evaluation}
+
+All three selected models --- MobileNetV2 (feature extraction), EfficientNetB0\_FineTune, and ResNet50 (feature extraction) --- were evaluated on a secondary 20-image dataset drawn from Wikimedia Commons (8 in-scope, 12 out-of-scope). As stated previously, primary generalisation is evaluated on the large Imagewoof held-out test set; this 20-image secondary check is supplementary and observational. While MobileNetV2 and EfficientNetB0\_FineTune achieved \textbf{1.00 in-scope external accuracy} (8/8 correct), ResNet50 achieved \textbf{0.875 in-scope external accuracy} (7/8 correct).
+
+On out-of-scope images, mean prediction confidence was 0.79 for MobileNetV2, 0.75 for EfficientNetB0\_FineTune, and 0.82 for ResNet50. This indicates that the models assigned more uncertain, distributed predictions to images outside the training distribution. In-scope predictions were substantially more confident, with mean confidence of 0.986, 0.985, and 0.951 respectively. On this small sample, the contrast between in-scope and out-of-scope confidence distributions suggests that prediction confidence partially reflects whether an image falls within the trained category set.
+
+All tested architectures showed consistent predictions on this small secondary set, although ResNet50 encountered one misclassification mapping a Beagle to an English Foxhound. Given the limited sample size, these findings are interpreted as comparative indicators rather than definitive generalisation estimates.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{results/external_confidence_analysis.png}
+  \caption{Prediction confidence distributions for in-scope and out-of-scope external images across the evaluated models, showing higher and tighter confidence on in-scope breeds.}
+  \label{fig:external_confidence}
+\end{figure}
+
+% =============================================================
+% SECTION 6: Conclusion and Future Work
+% =============================================================
+
+\section{Conclusion and Future Work}
+
+\subsection{Conclusion}
+
+The project successfully developed and evaluated a machine-learning pipeline for classifying 10 dog breeds using Imagewoof. The implementation of a reproducible TensorFlow/Keras notebook workflow effectively addressed RQ1, demonstrating an end-to-end practical process encompassing data loading, preprocessing, training, detailed evaluation, and result export.
+
+To address RQ2, feature-extraction and selective fine-tuning strategies were compared across MobileNetV2, EfficientNetB0, and ResNet50. The strongest in-dataset result emerged from feature extraction alone using EfficientNetB0, which achieved a held-out test accuracy of 0.9578 and a Macro F1 of 0.9529. MobileNetV2 followed closely with a 0.9509 test accuracy, while the much deeper ResNet50 reached 0.9397. Introducing fine-tuning did not yield consistent improvements over the simpler feature-extraction baselines for any of the three architectures, highlighting the robust transferability of lower-level ImageNet features.
+
+Class-wise analysis confirmed functional recall across all 10 breeds, ruling out class-collapse failures. English Foxhound consistently proved to be the weakest class across all tested architectures (recall bounded between 0.8304 and 0.8616), an outcome that aligns directly with its proportionally smaller training sample footprint. Secondary evaluation using the 20-image external dataset verified that MobileNetV2 and EfficientNetB0\_FineTune successfully classified 100\% of the in-scope images correctly (8/8), while ResNet50 correctly classified 87.5\% (7/8). For out-of-scope images, the models returned distributed, lower-confidence predictions rather than locking onto artificial patterns. As noted earlier, these external findings serve strictly as observational proxies rather than definitive statistical estimates of generalisation.
+
+The results indicate that transfer learning is a practical and effective approach for this fine-grained classification task. Feature extraction outperformed selective fine-tuning under the evaluated constraints, reinforcing the strength of the base ImageNet weights and the risk of overfitting on smaller datasets. EfficientNetB0 under feature extraction was the strongest option, while lightweight models like MobileNetV2 remained viable competitors for deployment.
+
+\subsection{Future Work}
+
+Future work should prioritise targeted improvements that directly address the observed failure modes. First, class-wise weakness suggests value in data-centric interventions such as class rebalancing, stricter curation of ambiguous samples, and controlled augmentation focused on viewpoint and background variation for weak classes. Second, fine-tuning should be revisited with staged unfreezing and tighter learning-rate schedules, because the first pass indicates that strategy choice matters but current settings are not yet optimal. Third, external evaluation should be formalized as a comparative protocol across at least two trained models on the same secondary dataset, with consistent preprocessing and reporting rules.
+
+A lightweight web interface was developed as a practical demonstration layer for the trained classifier, allowing breed predictions to be requested on uploaded images. In its current form this application serves as a proof-of-concept rather than a production system. Future work should formalise the interface, address edge cases for out-of-scope breeds, and integrate confidence thresholding so that low-confidence predictions are surfaced to the user rather than silently returned as a top-1 result.
+
+\bibliographystyle{agsm}
+\bibliography{references}
+
+\appendix
+
+\section{Appendix}
+
+\subsection{Imagewoof Label Mapping}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Imagewoof Label Mapping}
+  \begin{tabular}{ll}
+    \toprule
+    ImageNet Synset ID & Breed Name           \\
+    \midrule
+    n02086240          & Shih-Tzu             \\
+    n02087394          & Rhodesian Ridgeback  \\
+    n02088364          & Beagle               \\
+    n02089973          & English Foxhound     \\
+    n02093754          & Australian Terrier   \\
+    n02096294          & Border Terrier       \\
+    n02099601          & Golden Retriever     \\
+    n02105641          & Old English Sheepdog \\
+    n02111889          & Samoyed              \\
+    n02115641          & Dingo                \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{External Image Documentation (Wikimedia Commons)}
+
+The following table documents the external evaluation images used in the secondary generalisation check. The entries are aligned with \texttt{external\_images\_manifest.csv}. All images were sourced from Wikimedia Commons under Public Domain or permissive Creative Commons licences and were used strictly for local evaluation without redistribution.
+
+\begin{longtable}{@{}
+p{1.4cm}
+>{\raggedright\arraybackslash}p{4.2cm}
+p{1cm}
+p{2.2cm}
+p{1.8cm}
+@{}}
+  \caption{External Image Documentation} \\
+  \toprule
+  Image ID & Link & Scope & License & Accessed \\
+  \midrule
+  \endfirsthead
+
+  \toprule
+  Image ID & Link & Scope & License & Accessed \\
+  \midrule
+  \endhead
+
+  \bottomrule
+  \endlastfoot
+
+  EXT01 & \href{https://commons.wikimedia.org/wiki/File:Poodle.jpg}{Poodle} & Out & CC 0 & 10/02/2026 \\
+  EXT02 & \href{https://commons.wikimedia.org/wiki/File:Poodle_posing_in_profile.jpg}{Poodle} & Out & CC 0 & 10/02/2026 \\
+  EXT03 & \href{https://commons.wikimedia.org/wiki/File:Fat_Beagle.jpg}{Beagle} & In & CC 0 & 10/02/2026 \\
+  EXT04 & \href{https://commons.wikimedia.org/wiki/File:Beagle-dog.jpg}{Beagle} & In & CC 0 & 10/02/2026 \\
+  EXT05 & \href{https://commons.wikimedia.org/wiki/File:St._Bernard_dog_with_barrel.jpg}{St. Bernard} & Out & CC 0 & 10/02/2026 \\
+  EXT06 & \href{https://commons.wikimedia.org/wiki/File:Bernhardiner07.jpg}{St. Bernard} & Out & Public Domain & 10/02/2026 \\
+  EXT07 & \href{https://commons.wikimedia.org/wiki/File:German-shepherd-4055031920.jpg}{German Shepherd} & Out & CC 0 & 10/02/2026 \\
+  EXT08 & \href{https://commons.wikimedia.org/wiki/File:German_Shepherd_In_Iran_-_Mashhad_City_02.jpg}{German Shepherd} & Out & CC 0 & 10/02/2026 \\
+  EXT09 & \href{https://commons.wikimedia.org/wiki/File:Kalimba02.jpg}{Fila Brasileiro} & Out & Public Domain & 10/02/2026 \\
+  EXT10 & \href{https://commons.wikimedia.org/wiki/File:Kalimba01.jpg}{Fila Brasileiro} & Out & Public Domain & 10/02/2026 \\
+  EXT11 & \href{https://commons.wikimedia.org/wiki/File:Siberian-husky-1291343_1920.jpg}{Siberian Husky} & Out & CC 0 & 10/02/2026 \\
+  EXT12 & \href{https://commons.wikimedia.org/wiki/File:Husky1.JPG}{Siberian Husky} & Out & CC 0 & 10/02/2026 \\
+  EXT13 & \href{https://commons.wikimedia.org/wiki/File:Golden_Retriever2.JPG}{Golden Retriever} & In & CC 0 & 10/02/2026 \\
+  EXT14 & \href{https://commons.wikimedia.org/wiki/File:Golden_Retriever_Dukedestiny01_drvd.jpg}{Golden Retriever} & In & CC 0 & 10/02/2026 \\
+  EXT15 & \href{https://commons.wikimedia.org/wiki/File:Gala.jpg}{Rhodesian Ridgeback} & In & Public Domain & 10/02/2026 \\
+  EXT16 & \href{https://commons.wikimedia.org/wiki/File:Rhodesian_Ridgeback_Livernose_female.jpg}{Rhodesian Ridgeback} & In & CC 0 & 10/02/2026 \\
+  EXT17 & \href{https://commons.wikimedia.org/wiki/File:Basset_hound_2ans.jpeg}{Basset Hound} & Out & Public Domain & 10/02/2026 \\
+  EXT18 & \href{https://commons.wikimedia.org/wiki/File:Male_basset_hound.jpg}{Basset Hound} & Out & Public Domain & 10/02/2026 \\
+  EXT19 & \href{https://commons.wikimedia.org/wiki/File:Samoyed_on_Beach.jpg}{Samoyed} & In & Public Domain & 10/02/2026 \\
+  EXT20 & \href{https://commons.wikimedia.org/wiki/File:Samoieda_03.JPG}{Samoyed} & In & Public Domain & 10/02/2026 \\
+
+\end{longtable}
+
+\subsection{Generative AI Interaction Log}
+
+The following log records substantive uses of generative AI during the project and how the outputs informed the dissertation and supporting artefacts.
+
+\noindent\rule{\textwidth}{0.4pt}
+
+\textbf{2026-03-03 -- External evaluation design}
+
+\textbf{Prompt:} How should a 20-image external set be structured and documented using in-scope and out-of-scope breeds?
+
+\textbf{Output:} Supported design choices documented in Section 3 and Section 7.2.
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\textbf{2026-03-10 -- TensorFlow training setup}
+
+\textbf{Prompt:} How do I configure a TensorFlow/Keras training loop with EarlyStopping and ModelCheckpoint for a directory-based image dataset?
+
+\textbf{Output:} Informed the notebook training loop and callback configuration used across all six experiment runs in \texttt{Dog\_Breed\_Training\_Experiments.ipynb}.
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\textbf{2026-03-21 -- Ethics and licensing wording}
+
+\textbf{Prompt:} How should ethical and licensing constraints be described when using Imagewoof and Wikimedia Commons images?
+
+\textbf{Output:} Informed wording in Section 3, Procedure of Ethical Approval.
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+
+\subsubsection{Coverage and Completeness Statement}
+
+This appendix records the chronological set of substantive generative-AI prompts and questions that materially influenced dissertation framing, methods, analysis, interpretation, writing, and compliance decisions. The final completeness pass through 2026-05-14 was performed by the author, with AI used to support drafting, structure review, and compliance decisions. All final decisions, implementation choices, and submitted wording remained the responsibility of the author.
+
+\subsection{Weekly Planner}
+
+The following table details the weekly planning tasks for the final dissertation phase, from the post-interim period (1 March 2026) through to the submission deadline (17 May 2026).
+
+\begin{longtable}{@{}lp{3.5cm}p{9.5cm}@{}}
+  \caption{Weekly Planning Tasks} \\
+  \toprule
+  Week & Dates & Description \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Week & Dates & Description \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endlastfoot
+  1  & 2 Mar -- 8 Mar 2026   & Reviewed interim report feedback. Confirmed final project direction: training and evaluating a 10-breed dog classifier using Imagewoof. Updated \texttt{Plan\_to\_Follow.md} and revised research questions to reflect training/evaluation focus. \\[4pt]
+  2  & 9 Mar -- 15 Mar 2026  & Verified Imagewoof dataset directory structure and label mappings. Confirmed train/val split strategy. Set up notebook scaffold with data loading and ImageNet-style preprocessing pipeline. \\[4pt]
+  3  & 16 Mar -- 22 Mar 2026 & Implemented feature-extraction training loop and artifact export pipeline. Ran MobileNetV2 head-training experiment. Verified artefacts: \texttt{history.csv}, \texttt{classification\_report.csv}, \texttt{confusion\_matrix.npy}. \\[4pt]
+  4  & 23 Mar -- 29 Mar 2026 & Ran EfficientNetB0 feature-extraction baseline. Compared initial results with MobileNetV2. Identified English Foxhound as a consistently weaker class. Saved all artefacts. \\[4pt]
+  5  & 30 Mar -- 5 Apr 2026  & Implemented fine-tuning passes for MobileNetV2 and EfficientNetB0. Ran both fine-tuning experiments and confirmed artefact parity with the corresponding baseline runs. \\[4pt]
+  6  & 6 Apr -- 12 Apr 2026  & Ran external-image evaluation for MobileNetV2 and EfficientNetB0\_FineTune. Documented in-scope and out-of-scope predictions and confidence scores. \\[4pt]
+  7  & 13 Apr -- 19 Apr 2026 & Generated comparative results table, per-class F1 chart, and training curve visualisations. Began drafting Section 4 (Results and Discussion). \\[4pt]
+  8  & 20 Apr -- 26 Apr 2026 & Wrote Section 5 (Final Design and Implementation) including class-wise failure analysis and Section 5.4 (External Image Evaluation). Drafted Section 3 (Data and Methods). \\[4pt]
+  9  & 27 Apr -- 3 May 2026  & Drafted Section 6 (Conclusion and Future Work). Wrote Sections 1--2 (Background and Literature Review). Checked references against Harvard formatting requirements. \\[4pt]
+  10 & 4 May -- 10 May 2026  & Supervisor-guided revision review. Applied compliance and reproducibility refinements. Verified metric traceability. Updated AI interaction log and appendix sections. \\[4pt]
+  11 & 11 May -- 17 May 2026 & Added ResNet50 as a third architecture: ran feature-extraction and fine-tuning experiments with early stopping, integrated results into Tables 1--2 and updated the discussion. Embedded inline figures, finalised appendix sections, and prepared non-report deliverables (screencast, presentation slides, journal evidence). \\
+\end{longtable}
+
+\subsection{Code Repository}
+
+All project code --- including the main training notebook and dataset preparation script --- was saved under version control at:
+
+\textbf{GitHub repository:} \url{https://github.com/gsonego/DKIT_ICADS_9_Dissertation}
+
+The repository contains the development code used through the final experiment runs and report refinements.
+
+The repository also contains an early-stage web application demonstrating inference on uploaded images. This component is included as a proof-of-concept deliverable and is not fully evaluated in the written report; further development is identified in Section 6.2 as a priority for future work.
+
+\subsection{Hardware and Training Environment}
+
+The experiments conducted in this study were designed to prioritize reproducibility. To provide context regarding computational cost and environmental constraints, the following table details the hardware and software configuration used during the final model training runs.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Hardware and Software Configuration}
+  \begin{tabular}{p{4.5cm}p{9.5cm}}
+    \toprule
+    Component / Setting   & Detail \\
+    \midrule
+    \textbf{Operating System}  & Windows (Local Workstation) \\
+    \textbf{Primary Compute}   & NVIDIA RTX 5060 (Hardware Acceleration Enabled) \\
+    \textbf{Deep Learning API} & TensorFlow / Keras \\
+    \textbf{Language Runtime}  & Python 3 \\
+    \textbf{Training Time}     & Feature Extraction: ${\sim}$2--5 mins/run \textbar{} Fine-Tuning: ${\sim}$5--10 mins/run \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+This environment made the 100-epoch runs with Early Stopping feasible, highlighting the lower computational cost of transfer learning compared to training from scratch.
+
+\end{document}
