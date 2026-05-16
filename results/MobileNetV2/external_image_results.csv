@@ -1,0 +1,21 @@
+run_name,model_name,file_name,true_label,scope_status,predicted_label,confidence
+MobileNetV2,MobileNetV2,Poodle.jpg,Poodle,Out-of-Scope,Old English Sheepdog,0.3883855640888214
+MobileNetV2,MobileNetV2,Poodle_posing_in_profile.jpg,Poodle,Out-of-Scope,Shih-Tzu,0.4014013707637787
+MobileNetV2,MobileNetV2,Fat_Beagle.jpg,Beagle,In-Scope,Beagle,0.962030291557312
+MobileNetV2,MobileNetV2,Beagle-dog.jpg,Beagle,In-Scope,Beagle,0.9373018741607666
+MobileNetV2,MobileNetV2,St._Bernard_dog_with_barrel.jpg,St. Bernard,Out-of-Scope,Australian Terrier,0.466169536113739
+MobileNetV2,MobileNetV2,Bernhardiner07.jpg,St. Bernard,Out-of-Scope,English Foxhound,0.9732142686843872
+MobileNetV2,MobileNetV2,German-shepherd-4055031920.jpg,German Shepherd,Out-of-Scope,Australian Terrier,0.9776556491851807
+MobileNetV2,MobileNetV2,German_Shepherd_In_Iran_-_Mashhad_City_02.jpg,German Shepherd,Out-of-Scope,Dingo,0.8214590549468994
+MobileNetV2,MobileNetV2,Kalimba02.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.9984436631202698
+MobileNetV2,MobileNetV2,Kalimba01.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.9734147191047668
+MobileNetV2,MobileNetV2,Siberian-husky-1291343_1920.jpg,Siberian Husky,Out-of-Scope,Dingo,0.9909370541572571
+MobileNetV2,MobileNetV2,Husky1.JPG,Siberian Husky,Out-of-Scope,Dingo,0.9273896813392639
+MobileNetV2,MobileNetV2,Golden_Retriever2.JPG,Golden Retriever,In-Scope,Golden Retriever,0.9994069337844849
+MobileNetV2,MobileNetV2,Golden_Retriever_Dukedestiny01_drvd.jpg,Golden Retriever,In-Scope,Golden Retriever,0.9993574023246765
+MobileNetV2,MobileNetV2,Gala.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9927732348442078
+MobileNetV2,MobileNetV2,Rhodesian_Ridgeback_Livernose_female.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9997739791870117
+MobileNetV2,MobileNetV2,Basset_hound_2ans.jpeg,Basset Hound,Out-of-Scope,Beagle,0.6398962736129761
+MobileNetV2,MobileNetV2,Male_basset_hound.jpg,Basset Hound,Out-of-Scope,Beagle,0.9189158082008362
+MobileNetV2,MobileNetV2,Samoyed_on_Beach.jpg,Samoyed,In-Scope,Samoyed,0.9996994137763977
+MobileNetV2,MobileNetV2,Samoieda_03.jpg,Samoyed,In-Scope,Samoyed,0.999862790107727

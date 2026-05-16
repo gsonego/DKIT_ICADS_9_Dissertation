@@ -1,0 +1,21 @@
+run_name,model_name,file_name,true_label,scope_status,predicted_label,confidence
+EfficientNetB0,EfficientNetB0,Poodle.jpg,Poodle,Out-of-Scope,Shih-Tzu,0.3849635124206543
+EfficientNetB0,EfficientNetB0,Poodle_posing_in_profile.jpg,Poodle,Out-of-Scope,Rhodesian Ridgeback,0.29968908429145813
+EfficientNetB0,EfficientNetB0,Fat_Beagle.jpg,Beagle,In-Scope,Beagle,0.9654132723808289
+EfficientNetB0,EfficientNetB0,Beagle-dog.jpg,Beagle,In-Scope,Beagle,0.8713915944099426
+EfficientNetB0,EfficientNetB0,St._Bernard_dog_with_barrel.jpg,St. Bernard,Out-of-Scope,Golden Retriever,0.2570748031139374
+EfficientNetB0,EfficientNetB0,Bernhardiner07.jpg,St. Bernard,Out-of-Scope,English Foxhound,0.8463330864906311
+EfficientNetB0,EfficientNetB0,German-shepherd-4055031920.jpg,German Shepherd,Out-of-Scope,Border Terrier,0.5256216526031494
+EfficientNetB0,EfficientNetB0,German_Shepherd_In_Iran_-_Mashhad_City_02.jpg,German Shepherd,Out-of-Scope,Dingo,0.6414749622344971
+EfficientNetB0,EfficientNetB0,Kalimba02.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.9864336252212524
+EfficientNetB0,EfficientNetB0,Kalimba01.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.9585829377174377
+EfficientNetB0,EfficientNetB0,Siberian-husky-1291343_1920.jpg,Siberian Husky,Out-of-Scope,Dingo,0.9384970664978027
+EfficientNetB0,EfficientNetB0,Husky1.JPG,Siberian Husky,Out-of-Scope,Dingo,0.66420578956604
+EfficientNetB0,EfficientNetB0,Golden_Retriever2.JPG,Golden Retriever,In-Scope,Golden Retriever,0.9999866485595703
+EfficientNetB0,EfficientNetB0,Golden_Retriever_Dukedestiny01_drvd.jpg,Golden Retriever,In-Scope,Golden Retriever,0.9994677901268005
+EfficientNetB0,EfficientNetB0,Gala.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9942519068717957
+EfficientNetB0,EfficientNetB0,Rhodesian_Ridgeback_Livernose_female.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9991089701652527
+EfficientNetB0,EfficientNetB0,Basset_hound_2ans.jpeg,Basset Hound,Out-of-Scope,Beagle,0.8976855278015137
+EfficientNetB0,EfficientNetB0,Male_basset_hound.jpg,Basset Hound,Out-of-Scope,Beagle,0.953810453414917
+EfficientNetB0,EfficientNetB0,Samoyed_on_Beach.jpg,Samoyed,In-Scope,Samoyed,0.999870777130127
+EfficientNetB0,EfficientNetB0,Samoieda_03.jpg,Samoyed,In-Scope,Samoyed,0.979127824306488

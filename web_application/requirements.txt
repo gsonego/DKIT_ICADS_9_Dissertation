@@ -1,0 +1,5 @@
+streamlit==1.44.1
+tensorflow==2.18.0; python_version < "3.13"
+tensorflow==2.20.0; python_version >= "3.13"
+tf-keras
+Pillow==11.2.1

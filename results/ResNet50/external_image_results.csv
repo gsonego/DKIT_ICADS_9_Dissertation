@@ -1,0 +1,21 @@
+run_name,model_name,file_name,true_label,scope_status,predicted_label,confidence
+ResNet50,ResNet50,Poodle.jpg,Poodle,Out-of-Scope,Samoyed,0.7268899083137512
+ResNet50,ResNet50,Poodle_posing_in_profile.jpg,Poodle,Out-of-Scope,Golden Retriever,0.47317013144493103
+ResNet50,ResNet50,Fat_Beagle.jpg,Beagle,In-Scope,Beagle,0.7202819585800171
+ResNet50,ResNet50,Beagle-dog.jpg,Beagle,In-Scope,English Foxhound,0.8952682614326477
+ResNet50,ResNet50,St._Bernard_dog_with_barrel.jpg,St. Bernard,Out-of-Scope,Beagle,0.8251296281814575
+ResNet50,ResNet50,Bernhardiner07.jpg,St. Bernard,Out-of-Scope,English Foxhound,0.5707675814628601
+ResNet50,ResNet50,German-shepherd-4055031920.jpg,German Shepherd,Out-of-Scope,Border Terrier,0.6597386002540588
+ResNet50,ResNet50,German_Shepherd_In_Iran_-_Mashhad_City_02.jpg,German Shepherd,Out-of-Scope,Australian Terrier,0.9669651389122009
+ResNet50,ResNet50,Kalimba02.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.8901949524879456
+ResNet50,ResNet50,Kalimba01.jpg,Fila Brasileiro,Out-of-Scope,Rhodesian Ridgeback,0.9846290349960327
+ResNet50,ResNet50,Siberian-husky-1291343_1920.jpg,Siberian Husky,Out-of-Scope,Dingo,0.9679458737373352
+ResNet50,ResNet50,Husky1.JPG,Siberian Husky,Out-of-Scope,Dingo,0.8182042837142944
+ResNet50,ResNet50,Golden_Retriever2.JPG,Golden Retriever,In-Scope,Golden Retriever,0.9999915361404419
+ResNet50,ResNet50,Golden_Retriever_Dukedestiny01_drvd.jpg,Golden Retriever,In-Scope,Golden Retriever,0.9999998807907104
+ResNet50,ResNet50,Gala.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9958220720291138
+ResNet50,ResNet50,Rhodesian_Ridgeback_Livernose_female.jpg,Rhodesian Ridgeback,In-Scope,Rhodesian Ridgeback,0.9999899864196777
+ResNet50,ResNet50,Basset_hound_2ans.jpeg,Basset Hound,Out-of-Scope,Beagle,0.9887875914573669
+ResNet50,ResNet50,Male_basset_hound.jpg,Basset Hound,Out-of-Scope,Beagle,0.9783495664596558
+ResNet50,ResNet50,Samoyed_on_Beach.jpg,Samoyed,In-Scope,Samoyed,0.9997962713241577
+ResNet50,ResNet50,Samoieda_03.jpg,Samoyed,In-Scope,Samoyed,0.9987589120864868
